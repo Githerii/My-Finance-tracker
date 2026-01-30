@@ -28,6 +28,8 @@ def create_app():
     jwt.init_app(app)
     migrate.init_app(app, db)
 
+    from . import models  
+
     from .app import register_routes
     register_routes(app)
 
