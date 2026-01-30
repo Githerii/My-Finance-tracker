@@ -114,3 +114,21 @@ def register_routes(app):
             })
 
         return jsonify(result), 200
+
+    @app.route("/transactions/<int:tx_id>", methods=["DELETE"])
+    @jwt_required()
+    def delete_transaction(tx_id):
+        user_id = get_jwt_identity()
+
+        transaction = Transaction.query.filter_by(
+            id=tx_id,
+            user_id=user_id
+        ).first()
+
+        if not transaction:
+            return jsonify({"error": "Transaction not found"}), 404
+
+        db.session.delete(transaction)
+        db.session.commit()
+
+        return jsonify({"message": "Transaction deleted"}), 200
