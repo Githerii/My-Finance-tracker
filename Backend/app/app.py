@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import timedelta
 
 from .models import User
@@ -69,3 +69,29 @@ def register_routes(app):
         return jsonify({
             "access_token": access_token
         }), 200
+    
+    @app.route("/transactions", methods=["POST"])
+    @jwt_required()
+    def create_transaction():
+        data = request.get_json()
+
+        amount = data.get("amount")
+        category = data.get("category")
+        tx_type = data.get("type")
+
+        if not amount or not category or tx_type not in ["income", "expense"]:
+            return jsonify({"error": "Invalid transaction data"}), 400
+
+        user_id = get_jwt_identity()
+
+        transaction = Transaction(
+            amount=amount,
+            category=category,
+            type=tx_type,
+            user_id=user_id
+        )
+
+        db.session.add(transaction)
+        db.session.commit()
+
+        return jsonify({"message": "Transaction created"}), 201
