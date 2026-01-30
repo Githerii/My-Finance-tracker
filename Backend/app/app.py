@@ -95,3 +95,22 @@ def register_routes(app):
         db.session.commit()
 
         return jsonify({"message": "Transaction created"}), 201
+
+    @app.route("/transactions", methods=["GET"])
+    @jwt_required()
+    def get_transactions():
+        user_id = get_jwt_identity()
+
+        transactions = Transaction.query.filter_by(user_id=user_id).all()
+
+        result = []
+        for tx in transactions:
+            result.append({
+                "id": tx.id,
+                "amount": tx.amount,
+                "category": tx.category,
+                "type": tx.type,
+                "created_at": tx.created_at.isoformat()
+            })
+
+        return jsonify(result), 200
