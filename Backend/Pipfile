@@ -10,9 +10,10 @@ flask-jwt-extended = "*"
 python-dotenv = "*"
 flask-cors = "*"
 psycopg2-binary = "*"
+flask-migrate = "*"
+gunicorn = "*"
 
 [dev-packages]
-flask-migrate = "*"
 
 [requires]
 python_version = "3.12"
