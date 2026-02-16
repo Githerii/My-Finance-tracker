@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
@@ -24,11 +25,18 @@ def create_app():
         "JWT_SECRET_KEY", "dev-secret-change-me"
     )
 
+    frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+    CORS(
+        app,
+        resources={r"/*": {"origins": [frontend_origin]}},
+        supports_credentials=False,
+    )
+
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
 
-    from . import models  
+    from . import models
 
     from .app import register_routes
     register_routes(app)
