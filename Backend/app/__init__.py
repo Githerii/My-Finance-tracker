@@ -15,11 +15,22 @@ def create_app():
     app = Flask(__name__)
 
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    database_url = os.getenv("DATABASE_URL")
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "sqlite:///" + os.path.join(BASE_DIR, "finance.db")
-    )
+    if database_url:
+        # Some providers expose postgres://, while SQLAlchemy expects postgresql://
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    else:
+        app.config["SQLALCHEMY_DATABASE_URI"] = (
+            "sqlite:///" + os.path.join(BASE_DIR, "finance.db")
+        )
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+    }
 
     app.config["JWT_SECRET_KEY"] = os.getenv(
         "JWT_SECRET_KEY", "dev-secret-change-me"
